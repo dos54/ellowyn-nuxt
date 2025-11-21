@@ -42,7 +42,6 @@ export default defineNuxtConfig({
     DO_SPACES_KEY: process.env.DO_SPACES_KEY,
     DO_SPACES_SECRET: process.env.DO_SPACES_SECRET,
     DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
-    // If you have a CDN endpoint, keep this separate
     DO_SPACES_CDN_BASE: process.env.DO_SPACES_CDN_BASE
   },
 
