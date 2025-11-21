@@ -3,14 +3,14 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Install deps
 COPY package*.json ./
-COPY pnpm-lock.yaml* yarn.lock* .npmrc* ./ 2>/dev/null || true
-
 RUN npm ci
 
+# Copy source
 COPY . .
 
-# Nuxt 3/4: generate production build
+# Nuxt 3/4 production build
 RUN npm run build
 
 # 2) Runtime stage
@@ -22,9 +22,11 @@ ENV NODE_ENV=production
 ENV NITRO_PORT=3000
 ENV PORT=3000
 
+# Copy built output
 COPY --from=builder /app/.output ./.output
 COPY package*.json ./
 
+# Install only prod deps
 RUN npm ci --omit=dev
 
 EXPOSE 3000
