@@ -50,7 +50,7 @@ export default defineNuxtConfig({
     isEnabled: true,
     disableServerSideAuth: false,
     originEnvKey: 'AUTH_ORIGIN',
-    baseURL: 'http://10.0.0.100:3000/api/auth',
+    baseURL: 'https://www.ellowyn.com/api/auth',
     provider: {
       type: 'authjs',
       trustHost: false,
