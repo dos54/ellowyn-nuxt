@@ -2,11 +2,7 @@
   <div class="editor-container">
     <div class="control-group">
       <div class="button-group">
-        <button 
-          @click="addImage"
-        >
-          Set image
-        </button>
+        <button @click="addImage">Set image</button>
         <button
           :disabled="!editor?.can().chain().focus().toggleBold().run()"
           :class="{ 'is-active': editor?.isActive('bold') }"
@@ -105,15 +101,15 @@
         </button>
         <button @click="editor?.chain().focus().setHorizontalRule().run()">Horizontal rule</button>
         <button @click="editor?.chain().focus().setHardBreak().run()">Hard break</button>
-        <button 
+        <button
           :disabled="!editor?.can().chain().focus().undo().run()"
-          @click="editor?.chain().focus().undo().run()" 
+          @click="editor?.chain().focus().undo().run()"
         >
           Undo
         </button>
-        <button 
+        <button
           :disabled="!editor?.can().chain().focus().redo().run()"
-          @click="editor?.chain().focus().redo().run()" 
+          @click="editor?.chain().focus().redo().run()"
         >
           Redo
         </button>
@@ -121,79 +117,71 @@
     </div>
 
     <EditorContent v-if="editor" :editor="editor" />
-    <div
-      :class="{
-        'character-count': true,
-      }"
-    >
-    {{ editor?.storage.characterCount.words() }} words |
-    {{ editor?.storage.characterCount.characters() }} characters
-    </div>
 
-    <div class="post-button">
-      <v-btn color="primary" :disabled="!canPost" @click="onPost"> 
-        Post
-      </v-btn>
+    <div class="character-count">
+      {{ editor?.storage.characterCount.words() }} words |
+      {{ editor?.storage.characterCount.characters() }} characters
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import { CharacterCount, Placeholder } from '@tiptap/extensions';
+import { onBeforeUnmount, watch } from 'vue'
+import { CharacterCount, Placeholder } from '@tiptap/extensions'
 import Image from '@tiptap/extension-image'
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/vue-3'
 
-import { useNotify } from '~/store/notify'
+const props = defineProps<{
+  modelValue?: JSONContent
+}>()
 
-const props = defineProps<{ modelValue?: JSONContent }>()
-const emit = defineEmits<{ 'update:modelValue': [JSONContent]}>()
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: JSONContent): void
+}>()
+
 const editor = useEditor({
   extensions: [
     StarterKit,
     Placeholder.configure({ placeholder: 'Write something...' }),
     CharacterCount.configure(),
-    Image,
+    Image
   ],
-  content: props.modelValue ?? { type: 'doc', content: [{'type': 'paragraph'}] },
+  content: props.modelValue ?? { type: 'doc', content: [{ type: 'paragraph' }] },
   onCreate: () => console.debug('Editor created'),
   onUpdate: ({ editor }) => {
-    console.log(editor.getJSON())
-    emit('update:modelValue', editor.getJSON())
+    const json = editor.getJSON()
+    console.log(json)
+    emit('update:modelValue', json)
   },
   onDestroy: () => console.debug('Editor destroyed')
-  })
-
-onBeforeUnmount(() => {
-  editor?.value?.destroy()
 })
 
-async function onPost() {
-  const n = useNotify()
-  try {
-    await $fetch('/api/post/post', {
-      method: 'POST',
-      body: { content: editor?.value?.getJSON() }
-    })
-    n.show('Post successful.', 'success', 2000)
-  } catch {
-    n.show('Post failed', 'error', 4000)
-  }
-}
+// keep editor in sync if parent changes modelValue
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (!editor.value || !value) return
+    const current = editor.value.getJSON()
+    if (JSON.stringify(current) === JSON.stringify(value)) return
+    editor.value.commands.setContent(value)
+  },
+  { deep: true }
+)
 
-function addImage() {
+onBeforeUnmount(() => {
+  editor.value?.destroy()
+})
+
+function addImage(): void {
   const url = window.prompt('URL')
 
   if (url) {
     editor.value?.chain().focus().setImage({ src: url }).run()
   }
 }
-
-const canPost = computed(() => {
-  return (editor.value?.getText({ blockSeparator: '' }).trim().length ?? 0) > 0
-})
 </script>
+
 
 <style lang="scss">
 
@@ -204,7 +192,7 @@ const canPost = computed(() => {
 .editor-container {
   border: 3px solid lightgray;
   border-radius: 8px;
-  padding: .5rem 2rem;
+  padding: .5rem .5rem;
   
   .button-group {
     display: flex;
@@ -212,7 +200,7 @@ const canPost = computed(() => {
     gap: 8px;
   
     button {
-      background-color: lightgray;
+      background-color: rgb(var(--v-theme-surface-variant));
       border-radius: 4px;
       padding: .25rem .5rem;
   
@@ -239,7 +227,7 @@ const canPost = computed(() => {
 
   border: 2px solid lightgray;
   border-radius: 8px;
-  background-color: aliceblue;
+  background-color: rgb(var(--v-theme-surface-variant));
   
   :first-child {
     margin-top: 0;

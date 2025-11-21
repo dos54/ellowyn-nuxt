@@ -10,8 +10,8 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    // '@prisma/nuxt',
     '@pinia/nuxt',
+    '@sidebase/nuxt-auth',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error because vuetify said so
@@ -31,10 +31,35 @@ export default defineNuxtConfig({
         transformAssetUrls: true,
       }
     },
-    // resolve: {
-    //   alias: {
-    //     '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js'
-    //   }
-    // }
   },
+
+  runtimeConfig: {
+    baseUrl: '/api/auth',
+    authSecret: process.env.AUTH_SECRET,
+    githubClientId: process.env.GITHUB_CLIENT_ID,
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+    DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
+    DO_SPACES_KEY: process.env.DO_SPACES_KEY,
+    DO_SPACES_SECRET: process.env.DO_SPACES_SECRET,
+    DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
+    // If you have a CDN endpoint, keep this separate
+    DO_SPACES_CDN_BASE: process.env.DO_SPACES_CDN_BASE
+  },
+
+  auth: {
+    isEnabled: true,
+    disableServerSideAuth: false,
+    originEnvKey: 'AUTH_ORIGIN',
+    baseURL: 'http://10.0.0.100:3000/api/auth',
+    provider: {
+      type: 'authjs',
+      trustHost: false,
+      defaultProvider: 'github',
+      addDefaultCallbackUrl: true,
+    },
+    sessionRefresh: {
+      enablePeriodically: 300000,
+      enableOnWindowFocus: true,
+    }
+  }
 })
